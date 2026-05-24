@@ -19,7 +19,7 @@ cv::Mat drawAllContours(const cv::Mat& src,
 // 按灯条形状（长宽比）过滤轮廓
 std::vector<std::vector<cv::Point>> filterLightBars(
     const std::vector<std::vector<cv::Point>>& contours,
-    double minAspectRatio = 2.5,
+    double minAspectRatio = 3,
     double minArea = 50.0);
 
 // 在原图上绘制灯条的最小外接旋转矩形

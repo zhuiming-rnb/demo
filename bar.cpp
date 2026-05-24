@@ -4,8 +4,8 @@
 #include <filesystem>
 
 int main() {
-    std::string imgDir = "./images";
-    std::string resultsDir = "./results";
+    std::string imgDir = "/home/wxy/demo/images";
+    std::string resultsDir = "/home/wxy/demo/results";
 
     // 确保输出目录存在
     if (!std::filesystem::exists(resultsDir)) {
@@ -24,11 +24,12 @@ int main() {
     for (const auto& path : images) {
         std::string stem = path.stem().string();
 
-        // 1. 读取原图
+        // 读取原图
         cv::Mat src = readImage(path);
         if (src.empty()) continue;
-
-        // 2. 颜色阈值分割（红+蓝）
+        
+        cv::addWeighted(src, 0.6, src, 0.0, 0.0, src);
+        // 颜色阈值分割（红+蓝）
         cv::Mat mask = thresholdRedBlue(src);
 
         // 3. 保存阈值处理结果

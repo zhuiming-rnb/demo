@@ -1,0 +1,3 @@
+/home/wxy/demo/build/CMakeFiles/bar.dir
+/home/wxy/demo/build/CMakeFiles/edit_cache.dir
+/home/wxy/demo/build/CMakeFiles/rebuild_cache.dir
