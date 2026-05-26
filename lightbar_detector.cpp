@@ -1,39 +1,14 @@
 #include "lightbar_detector.hpp"
 #include <opencv2/imgproc.hpp>
 
-// 红色在 HSV 中跨越 0° 两侧，分两段阈值
-static const cv::Scalar RED_LOW1(0, 100, 100);
-static const cv::Scalar RED_HIGH1(10, 255, 255);
-static const cv::Scalar RED_LOW2(160, 100, 100);
-static const cv::Scalar RED_HIGH2(180, 255, 255);
-// 蓝色 HSV 阈值
-static const cv::Scalar BLUE_LOW(100, 100, 100);
-static const cv::Scalar BLUE_HIGH(130, 255, 255);
-
-cv::Mat thresholdRedBlue(const cv::Mat& src) {
-    cv::Mat hsv;
-    cv::cvtColor(src, hsv, cv::COLOR_BGR2HSV);
-    // cv::cvtColor: 颜色空间转换 BGR -> HSV，便于颜色阈值分割
-
-    // 提取红色（两段合并）
-    cv::Mat redMask1, redMask2, redMask;
-    cv::inRange(hsv, RED_LOW1, RED_HIGH1, redMask1);
-    // cv::inRange: 提取 HSV 中 [RED_LOW1, RED_HIGH1] 范围内的像素，输出二值掩码
-    cv::inRange(hsv, RED_LOW2, RED_HIGH2, redMask2);
-    // cv::inRange: 提取红色第二段（H 在 160~180 之间）
-    cv::bitwise_or(redMask1, redMask2, redMask);
-    // cv::bitwise_or: 按位或合并两段红色掩码
-
-    // 提取蓝色
-    cv::Mat blueMask;
-    cv::inRange(hsv, BLUE_LOW, BLUE_HIGH, blueMask);
-    // cv::inRange: 提取蓝色 HSV 范围内的像素
-
-    // 合并红蓝
-    cv::Mat combined;
-    cv::bitwise_or(redMask, blueMask, combined);
-    // cv::bitwise_or: 合并红蓝掩码
-    return combined;
+cv::Mat thresholdRed(const cv::Mat& src) {
+    // 在 BGR 空间直接提取红色：R 通道显著高于 G 和 B，单次判断无需拼接
+    cv::Mat channels[3];
+    cv::split(src, channels);
+    cv::Mat redMask = (channels[2] > channels[1] * 1.2)
+                    & (channels[2] > channels[0] * 1.2)
+                    & (channels[2] > 135);
+    return redMask;
 }
 
 std::vector<std::vector<cv::Point>> extractContours(const cv::Mat& mask) {
@@ -88,14 +63,18 @@ cv::Mat drawLightBarRects(const cv::Mat& src,
     cv::Mat out = src.clone();
     for (const auto& c : lightBars) {
         cv::RotatedRect rect = cv::minAreaRect(c);
-        // cv::minAreaRect: 获取灯条轮廓的最小面积外接旋转矩形
+        float w = rect.size.width;
+        float h = rect.size.height;
+        float angle = std::abs(rect.angle);
+        // 长边与水平面夹角：width >= height 时夹角即 |angle|，否则 height 边垂直于 width 边
+        float longEdgeAngle = (w >= h) ? angle : (90.0f - angle);
+        if (longEdgeAngle < 75.0f) continue;
+
         cv::Point2f vertices[4];
         rect.points(vertices);
-        // RotatedRect::points: 获取旋转矩形的四个顶点
         for (int j = 0; j < 4; j++) {
             cv::line(out, vertices[j], vertices[(j + 1) % 4],
                      cv::Scalar(0, 255, 255), 2);
-            // cv::line: 绘制矩形边，黄色(0,255,255)，线宽 2px
         }
     }
     return out;

@@ -3,8 +3,8 @@
 #include <opencv2/core.hpp>
 #include <vector>
 
-// 对原图做红蓝颜色阈值分割，返回二值掩码
-cv::Mat thresholdRedBlue(const cv::Mat& src);
+// 对原图做红色阈值分割（BGR 单次判断，无需拼接），返回二值掩码
+cv::Mat thresholdRed(const cv::Mat& src);
 
 // 从掩码中提取轮廓（最外层）
 std::vector<std::vector<cv::Point>> extractContours(const cv::Mat& mask);

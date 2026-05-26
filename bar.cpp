@@ -4,8 +4,8 @@
 #include <filesystem>
 
 int main() {
-    std::string imgDir = "/home/wxy/demo/images";
-    std::string resultsDir = "/home/wxy/demo/results";
+    std::string imgDir = "/home/xxx/python/demo/images";
+    std::string resultsDir = "/home/xxx/python/demo/build1/results";
 
     // 确保输出目录存在
     if (!std::filesystem::exists(resultsDir)) {
@@ -25,12 +25,12 @@ int main() {
         std::string stem = path.stem().string();
 
         // 读取原图
-        cv::Mat src = readImage(path);
+        cv::Mat src = readImage(path);  //BGR   RGB RAW
         if (src.empty()) continue;
         
-        cv::addWeighted(src, 0.6, src, 0.0, 0.0, src);
-        // 颜色阈值分割（红+蓝）
-        cv::Mat mask = thresholdRedBlue(src);
+        cv::addWeighted(src, 0.6, src, 0.0, 0.0, src);  //i^0.6
+        // 红色阈值分割
+        cv::Mat mask = thresholdRed(src);
 
         // 3. 保存阈值处理结果
         saveImage(resultsDir + "/" + stem + "_threshold.png", applyMaskToImage(src, mask));
