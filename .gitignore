@@ -1,0 +1,6 @@
+build/
+build1/
+*.o
+*.out
+*.bin
+results/
